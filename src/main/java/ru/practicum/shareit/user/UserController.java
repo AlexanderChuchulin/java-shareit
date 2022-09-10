@@ -1,12 +1,17 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.abstraction.CommonController;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
-@RequestMapping(path = "/users")
-public class UserController {
+@RequestMapping("/users")
+public class UserController extends CommonController<User, UserDto> {
+
+    @Autowired
+    public UserController(UserService userService) {
+        commonService = userService;
+    }
 }
+
+
