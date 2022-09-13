@@ -1,10 +1,10 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.abstraction.CommonMapper;
+import ru.practicum.shareit.abstraction.Mapper;
 
 @Service
-public class UserMapper extends CommonMapper<User, UserDto> {
+public class UserMapper implements Mapper<User, UserDto> {
 
     @Override
     public UserDto entityToDto(User user) {
@@ -16,7 +16,7 @@ public class UserMapper extends CommonMapper<User, UserDto> {
     }
 
     @Override
-    protected User dtoToEntity(UserDto userDto, Integer userIdHeader) {
+    public User dtoToEntity(UserDto userDto, Long userIdHeader) {
         return User.builder()
                 .email(userDto.getEmail())
                 .userName(userDto.getUserName())

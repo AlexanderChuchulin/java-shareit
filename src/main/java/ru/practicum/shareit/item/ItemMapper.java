@@ -2,16 +2,17 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.abstraction.CommonMapper;
-import ru.practicum.shareit.user.InMemoryUserStorage;
+import ru.practicum.shareit.abstraction.Mapper;
+import ru.practicum.shareit.abstraction.Storage;
+import ru.practicum.shareit.user.User;
 
 @Service
-public class ItemMapper extends CommonMapper<Item, ItemDto> {
-    private final InMemoryUserStorage inMemoryUserStorage;
+public class ItemMapper implements Mapper<Item, ItemDto> {
+    private final Storage<User> userStorage;
 
     @Autowired
-    public ItemMapper(InMemoryUserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public ItemMapper(Storage<User> userStorage) {
+        this.userStorage = userStorage;
     }
 
     @Override
@@ -26,12 +27,12 @@ public class ItemMapper extends CommonMapper<Item, ItemDto> {
     }
 
     @Override
-    protected Item dtoToEntity(ItemDto itemDto, Integer userIdHeader) {
+    public Item dtoToEntity(ItemDto itemDto, Long userIdHeader) {
         return Item.builder()
                 .itemName(itemDto.getItemName())
                 .itemDesc(itemDto.getItemDesc())
                 .isItemAvailable(itemDto.getIsItemAvailable())
-                .itemOwner(inMemoryUserStorage.getEntityMap().get(userIdHeader))
+                .itemOwner(userStorage.getEntityMapStorage().get(userIdHeader))
                 .userIdHeader(userIdHeader)
                 .build();
     }

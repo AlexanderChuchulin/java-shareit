@@ -3,30 +3,29 @@ package ru.practicum.shareit.abstraction;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public abstract class CommonService<T extends Entity, V extends EntityDto> implements Service<V> {
+public abstract class CommonService<T extends Entity, V extends EntityDto> implements Service<T, V> {
     protected Storage<T> storage;
-    protected CommonMapper<T, V> mapper;
+    protected Mapper<T, V> mapper;
 
     @Override
-    public V createEntity(V entityDto, Integer userIdHeader) {
-        return mapper.entityToDto(storage.createEntity(mapper.dtoToEntity(entityDto, userIdHeader)));
+    public V createEntityService(V entityDto, Long userIdHeader) {
+        return mapper.entityToDto(storage.createEntityStorage(mapper.dtoToEntity(entityDto, userIdHeader)));
     }
 
     @Override
-    public V updateEntity(int entityId, V entityDto, Integer userIdHeader) {
-        mapper.entityToDto(storage.updateEntity(entityId, mapper.dtoToEntity(entityDto, userIdHeader)));
-        return mapper.entityToDto(storage.updateEntity(entityId, mapper.dtoToEntity(entityDto, userIdHeader)));
+    public V updateEntityService(Long entityId, V entityDto, Long userIdHeader) {
+        return mapper.entityToDto(storage.updateEntityStorage(entityId, mapper.dtoToEntity(entityDto, userIdHeader)));
     }
 
     @Override
-    public void deleteEntity(Integer entityId) {
-        storage.deleteEntity(entityId);
+    public void deleteEntityService(Long entityId) {
+        storage.deleteEntityStorage(entityId);
     }
 
     @Override
-    public Object getEntity(Integer entityId, Integer userIdHeader) {
+    public Object getEntityService(Long entityId, Long userIdHeader) {
         if (entityId == null) {
-            ArrayList<T> entityList = (ArrayList<T>) storage.getEntity(null);
+            ArrayList<T> entityList = (ArrayList<T>) storage.getEntityStorage(null);
 
             if (userIdHeader != null) {
                 return entityList.stream()
@@ -39,6 +38,6 @@ public abstract class CommonService<T extends Entity, V extends EntityDto> imple
                         .collect(Collectors.toList());
             }
         }
-        return mapper.entityToDto((T) storage.getEntity(entityId));
+        return mapper.entityToDto((T) storage.getEntityStorage(entityId));
     }
 }

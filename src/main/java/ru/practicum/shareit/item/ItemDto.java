@@ -15,14 +15,14 @@ import ru.practicum.shareit.user.User;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemDto extends EntityDto {
     @JsonProperty("id")
-    private int itemId;
+    private Long itemId;
     @JsonProperty("name")
     private String itemName;
     @JsonProperty("description")
     private String itemDesc;
     @JsonProperty("available")
     private Boolean isItemAvailable;
-    private Integer userIdHeader;
+    private Long userIdHeader;
     private User itemOwner;
     private ItemRequest itemRequest;
 }

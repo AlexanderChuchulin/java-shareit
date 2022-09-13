@@ -9,12 +9,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/items")
 public class ItemController extends CommonController<Item, ItemDto> {
-    ItemService itemService;
+    private final ItemService itemService;
 
     @Autowired
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
-        commonService = itemService;
+        service = itemService;
     }
 
     @GetMapping("/search")

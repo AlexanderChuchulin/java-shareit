@@ -1,20 +1,35 @@
 package ru.practicum.shareit.abstraction;
 
+import java.util.Map;
+
 public interface Storage<T extends Entity> {
-    // Метод создаёт объект
-    T createEntity(T entity);
+    /**
+    Метод создаёт объект
+    */
+    T createEntityStorage(T entity);
 
-    // Метод обновляет объект
-    T updateEntity(int entityId, T entity);
+    /**
+    Метод обновляет объект
+    */
+    T updateEntityStorage(Long entityId, T entity);
 
-    // Метод удаляет все объекты или один объект по заданному id
-    void deleteEntity(Integer entityId);
+    /**
+    Метод удаляет все объекты или один объект по заданному id
+    */
+    void deleteEntityStorage(Long entityId);
 
-    // Метод возвращает все объекты или один объект по заданному id
-    Object getEntity(Integer entityId);
+    /**
+    Метод возвращает все объекты или один объект по заданному id
+    */
+    Object getEntityStorage(Long entityId);
 
-    // Метод для валидации сущности
-    void validateEntity(T entity, Boolean isUpdate, String conclusion);
+    /**
+     Метод возвращает таблицу всех объектов
+     */
+    Map<Long, T> getEntityMapStorage();
 
-    void entityExistCheck(int id, String action);
+    /**
+    Метод проверяет существование объекта
+    */
+    void entityExistCheck(Long entityId, String action);
 }

@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public abstract class Entity {
-    private Integer id;
+    private Long id;
     @JsonIgnore
-    private Integer userIdHeader;
+    private Long userIdHeader;
 }
