@@ -1,10 +1,15 @@
 package ru.practicum.shareit.abstraction;
 
-public interface Service<T extends Entity, V extends EntityDto> {
+public interface ShareItService<T extends ShareItEntity, V extends EntityDto> {
     /**
     Метод создаёт объект
     */
     V createEntityService(V entity, Long userIdHeader);
+
+    /**
+     Метод возвращает все объекты или один объект по заданному id
+     */
+    Object getEntityService(Long entityId, Long userIdHeader, String...bookingStatus);
 
     /**
     Метод обновляет объект
@@ -15,11 +20,6 @@ public interface Service<T extends Entity, V extends EntityDto> {
     Метод удаляет все объекты или один объект по заданному id
     */
     void deleteEntityService(Long entityId);
-
-    /**
-    Метод возвращает все объекты или один объект по заданному id
-    */
-    Object getEntityService(Long entityId, Long userIdHeader);
 
     /**
      Метод для валидации сущности
