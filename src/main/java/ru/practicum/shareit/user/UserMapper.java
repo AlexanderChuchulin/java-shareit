@@ -1,22 +1,19 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.abstraction.Mapper;
 
 @Service
-public class UserMapper implements Mapper<User, UserDto> {
+public class UserMapper {
 
-    @Override
-    public UserDto entityToDto(User user) {
+    public UserDto userToDto(User user) {
         return UserDto.builder()
-                .userId(user.getId())
+                .userId(user.getUserId())
                 .email(user.getEmail())
                 .userName(user.getUserName())
                 .build();
     }
 
-    @Override
-    public User dtoToEntity(UserDto userDto, Long userIdHeader) {
+    public User dtoToUser(UserDto userDto) {
         return User.builder()
                 .email(userDto.getEmail())
                 .userName(userDto.getUserName())

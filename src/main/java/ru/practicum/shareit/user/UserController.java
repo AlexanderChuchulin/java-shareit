@@ -10,7 +10,7 @@ public class UserController extends CommonController<User, UserDto> {
 
     @Autowired
     public UserController(UserService userService) {
-        service = userService;
+        shareItService = userService;
     }
 }
 
