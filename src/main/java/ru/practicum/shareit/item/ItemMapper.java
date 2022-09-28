@@ -1,39 +1,73 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.abstraction.Mapper;
-import ru.practicum.shareit.abstraction.Storage;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.user.UserJpaRepository;
+
+import java.util.Comparator;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Service
-public class ItemMapper implements Mapper<Item, ItemDto> {
-    private final Storage<User> userStorage;
+public class ItemMapper {
+    private final UserJpaRepository userJpaRepository;
+    private final CommentJpaRepository commentJpaRepository;
+    private final CommentMapper commentMapper;
+    private final BookingMapper bookingMapper;
 
     @Autowired
-    public ItemMapper(Storage<User> userStorage) {
-        this.userStorage = userStorage;
+    public ItemMapper(UserJpaRepository userJpaRepository, CommentJpaRepository commentJpaRepository,
+                      CommentMapper commentMapper, @Lazy BookingMapper bookingMapper) {
+        this.userJpaRepository = userJpaRepository;
+        this.commentJpaRepository = commentJpaRepository;
+        this.commentMapper = commentMapper;
+        this.bookingMapper = bookingMapper;
     }
 
-    @Override
-    public ItemDto entityToDto(Item item) {
-        return ItemDto.builder()
-                .itemId(item.getId())
+    public ItemDto itemToDto(Item item, Boolean... isOwner) {
+        ItemDto itemDto = ItemDto.builder()
+                .itemId(item.getItemId())
                 .itemName(item.getItemName())
-                .itemDesc(item.getItemDesc())
+                .itemDescription(item.getItemDescription())
                 .isItemAvailable(item.getIsItemAvailable())
-                .itemOwner(item.getItemOwner())
+                .owner(item.getOwner())
+                .nextBooking(null)
+                .lastBooking(null)
+                .commentsDtoList(commentJpaRepository.findAllByItemId(item.getItemId()).
+                        stream().map(commentMapper::commentToDto).collect(Collectors.toList()))
                 .build();
+
+        if (isOwner.length == 1 && isOwner[0] && item.getBookingsSet() != null && !item.getBookingsSet().isEmpty()) {
+            TreeSet<Booking> bookingsSortedSet = new TreeSet<>(Comparator.comparing(Booking::getBookingStart).reversed());
+
+            bookingsSortedSet.addAll(item.getBookingsSet());
+
+            if (bookingsSortedSet.first().getBookingStatus() != BookingStatus.REJECTED) {
+                itemDto.setNextBooking(bookingMapper.bookingToDtoForItem(bookingsSortedSet.first()));
+            }
+            if (bookingsSortedSet.last().getBookingStatus() != BookingStatus.REJECTED) {
+                itemDto.setLastBooking(bookingMapper.bookingToDtoForItem(bookingsSortedSet.last()));
+            }
+        }
+        return itemDto;
     }
 
-    @Override
-    public Item dtoToEntity(ItemDto itemDto, Long userIdHeader) {
+
+    public Item dtoToItem(ItemDto itemDto, Long userIdHeader) {
+        Long userIdOwner = userIdHeader;
+        if (userIdHeader == null) {
+            userIdOwner = 0L;
+        }
         return Item.builder()
                 .itemName(itemDto.getItemName())
-                .itemDesc(itemDto.getItemDesc())
+                .itemDescription(itemDto.getItemDescription())
                 .isItemAvailable(itemDto.getIsItemAvailable())
-                .itemOwner(userStorage.getEntityMapStorage().get(userIdHeader))
                 .userIdHeader(userIdHeader)
+                .owner(userJpaRepository.findById(userIdOwner).orElse(null))
                 .build();
     }
 }
