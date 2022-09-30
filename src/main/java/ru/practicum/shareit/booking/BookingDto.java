@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import ru.practicum.shareit.abstraction.EntityDto;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.user.UserDto;
+import ru.practicum.shareit.item.Item;
 
 import java.time.LocalDateTime;
 
@@ -27,9 +27,30 @@ public class BookingDto extends EntityDto {
     private BookingStatus bookingStatus;
     @JsonIgnoreProperties({"nextBookingDto", "lastBookingDto"})
     @JsonProperty("item")
-    private ItemDto bookingItem;
-    private UserDto booker;
+    private ItemDtoForBooking bookingItem;
+    private UserDtoForBooking booker;
     private Long userIdHeader;
     private Long itemId;
-    private Long bookerId;
+
+    @JsonInclude
+    @Getter
+    public static class ItemDtoForBooking {
+        Long id;
+        String name;
+
+        public ItemDtoForBooking(Item bookingItem) {
+            id = bookingItem.getItemId();
+            name = bookingItem.getItemName();
+        }
+    }
+
+    @JsonInclude
+    @Getter
+    public static class UserDtoForBooking {
+        Long id;
+
+        public UserDtoForBooking(Long bookerId) {
+            id = bookerId;
+        }
+    }
 }

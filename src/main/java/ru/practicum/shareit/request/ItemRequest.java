@@ -19,11 +19,14 @@ import java.util.Objects;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemRequest extends ShareItEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "request_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "request_id")
     private Long requestId;
     @Column(name = "request_description", nullable = false)
     private String itemDescription;
-    @ManyToOne @JoinColumn(name = "requestor_id", referencedColumnName = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "requestor_id", referencedColumnName = "user_id")
     private User requestor;
     @Transient
     private Long userIdHeader;

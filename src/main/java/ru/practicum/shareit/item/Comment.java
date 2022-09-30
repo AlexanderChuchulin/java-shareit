@@ -20,13 +20,17 @@ import java.util.Objects;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Comment extends ShareItEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "comment_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")
     private Long commentId;
     @Column(name = "comment_text", nullable = false)
     private String commentText;
-    @ManyToOne @JoinColumn(name = "comment_item_id", referencedColumnName = "item_id")
+    @ManyToOne
+    @JoinColumn(name = "comment_item_id", referencedColumnName = "item_id")
     private Item commentItem;
-    @ManyToOne @JoinColumn(name = "author_id", referencedColumnName = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "author_id", referencedColumnName = "user_id")
     private User author;
     private LocalDateTime commentDate;
     @Transient

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.abstraction.ShareItService;
@@ -9,6 +10,7 @@ import ru.practicum.shareit.exception.AuthorizationExc;
 import ru.practicum.shareit.exception.EntityNotFoundExc;
 import ru.practicum.shareit.exception.MainPropDuplicateExc;
 import ru.practicum.shareit.exception.ValidationExc;
+import ru.practicum.shareit.other.OtherUtils;
 import ru.practicum.shareit.user.*;
 
 import java.time.LocalDateTime;
@@ -48,8 +50,6 @@ public class ItemService implements ShareItService<Item, ItemDto> {
     }
 
     CommentDto createCommentService(CommentDto commentDto, Long itemId, Long userIdHeader) {
-        System.out.println(bookingJpaRepository.findAllByBookerIdAndItemIdAndTime(itemId, userIdHeader, LocalDateTime.now()));
-
         if (bookingJpaRepository.findAllByBookerIdAndItemIdAndTime(itemId, userIdHeader, LocalDateTime.now()).isEmpty()
                 || commentDto.getCommentText().isBlank()) {
             throw new ValidationExc("Комментарий не соответствует условиям Бронирования или текст пустой");
@@ -60,18 +60,19 @@ public class ItemService implements ShareItService<Item, ItemDto> {
 
     @Override
     public Object getEntityService(Long itemId, Long userIdHeader, String...bookingStatus) {
-        userJpaRepository.entityExistCheck(userIdHeader, "Get Item by User ID Header " + itemId);
+        if (!userJpaRepository.existsById(userIdHeader)) {
+            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " +
+                    "Get Item by User ID Header " + itemId + " прерван");
+        }
 
         if (itemId == null) {
             log.info("Get All Items by User ID Header");
-            return itemJpaRepository.findAllByOwnerId(userIdHeader).stream()
+            return itemJpaRepository.findAllByOwnerUserId(userIdHeader).stream()
                     .map(item -> itemMapper.itemToDto(item, true))
                     .collect(Collectors.toList());
         }
 
-        itemJpaRepository.entityExistCheck(itemId, "Get Item by ID " + itemId);
-
-        System.out.println("owner id " + itemJpaRepository.getReferenceById(itemId).getOwner().getUserId());
+        entityExistCheck(itemId, "Get Item by ID " + itemId);
 
         if (itemJpaRepository.getReferenceById(itemId).getOwner().getUserId() == userIdHeader.longValue()) {
             log.info("Get Item by Id " + itemId + " For Owner with Id " + userIdHeader);
@@ -86,7 +87,7 @@ public class ItemService implements ShareItService<Item, ItemDto> {
         if (searchText.isBlank()) {
             return List.of();
         }
-        return itemJpaRepository.getAvailableItemsBySearchText(searchText).stream()
+        return itemJpaRepository.findAllAvailableItemsBySearchText(searchText).stream()
                 .map(itemMapper::itemToDto)
                 .collect(Collectors.toList());
     }
@@ -95,7 +96,15 @@ public class ItemService implements ShareItService<Item, ItemDto> {
     public ItemDto updateEntityService(Long itemId, ItemDto itemDto, Long userIdHeader) {
         Item updatingItem = itemMapper.dtoToItem(itemDto, userIdHeader);
 
-        itemJpaRepository.updateItemById(itemId, updatingItem, this);
+        entityExistCheck(itemId, "Update Item by id " + itemId);
+
+        BeanUtils.copyProperties(itemJpaRepository
+                .getReferenceById(itemId), updatingItem, OtherUtils.getNotNullPropertyNames(updatingItem));
+
+        validateEntityService(updatingItem, true, "Вещь не обновлена в БД.");
+
+        updatingItem.setUserIdHeader(updatingItem.getOwner().getUserId());
+
         log.info("Update Item by ID " + itemId);
         return itemMapper.itemToDto(itemJpaRepository.save(updatingItem));
     }
@@ -106,7 +115,7 @@ public class ItemService implements ShareItService<Item, ItemDto> {
             itemJpaRepository.deleteAll();
             log.info("Delete All Items");
         } else {
-            itemJpaRepository.entityExistCheck(itemId, "Delete User by id " + itemId);
+            entityExistCheck(itemId, "Delete User by id " + itemId);
             itemJpaRepository.deleteById(itemId);
             log.info("Delete Item by id " + itemId);
         }
@@ -149,6 +158,13 @@ public class ItemService implements ShareItService<Item, ItemDto> {
             } else {
                 throw new ValidationExc(excMsg);
             }
+        }
+    }
+
+    @Override
+    public void entityExistCheck(Long itemId, String action) {
+        if (!itemJpaRepository.existsById(itemId)) {
+            throw new EntityNotFoundExc("Ошибка поиска Вещи в БД. " + action + " прервано.");
         }
     }
 }

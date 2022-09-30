@@ -1,11 +1,14 @@
 package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.abstraction.ShareItService;
+import ru.practicum.shareit.exception.EntityNotFoundExc;
 import ru.practicum.shareit.exception.MainPropDuplicateExc;
 import ru.practicum.shareit.exception.ValidationExc;
+import ru.practicum.shareit.other.OtherUtils;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -40,15 +43,22 @@ public class UserService implements ShareItService<User, UserDto> {
                     .map(userMapper::userToDto)
                     .collect(Collectors.toList());
         }
-        userJpaRepository.entityExistCheck(userId, "Get User by ID " + userId);
+        entityExistCheck(userId, "Get User by ID " + userId);
         log.info("Get User By Id " + userId);
         return userMapper.userToDto(userJpaRepository.getReferenceById(userId));
     }
 
+    @Override
     public UserDto updateEntityService(Long userId, UserDto userDto, Long userIdHeader) {
         User updatingUser = userMapper.dtoToUser(userDto);
 
-        userJpaRepository.updateUserById(userId, updatingUser, this);
+        entityExistCheck(userId, "Update User by id " + userId);
+
+        BeanUtils.copyProperties(userJpaRepository
+                .getReferenceById(userId), updatingUser, OtherUtils.getNotNullPropertyNames(updatingUser));
+
+        validateEntityService(updatingUser, true, "Пользователь не обновлён в БД.");
+
         log.info("Update User by ID " + userId);
         return userMapper.userToDto(userJpaRepository.save(updatingUser));
     }
@@ -59,7 +69,7 @@ public class UserService implements ShareItService<User, UserDto> {
             userJpaRepository.deleteAll();
             log.info("Delete All Users");
         } else {
-            userJpaRepository.entityExistCheck(userId, "Delete User by ID " + userId);
+            entityExistCheck(userId, "Delete User by ID " + userId);
             userJpaRepository.deleteById(userId);
             log.info("Delete User by ID " + userId);
         }
@@ -90,6 +100,13 @@ public class UserService implements ShareItService<User, UserDto> {
             } else {
                 throw new ValidationExc(excMsg + conclusion);
             }
+        }
+    }
+
+    @Override
+    public void entityExistCheck(Long userId, String action) {
+        if (!userJpaRepository.existsById(userId)) {
+            throw new EntityNotFoundExc("Ошибка поиска Пользователя в БД. " + action + " прервано.");
         }
     }
 }

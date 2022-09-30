@@ -1,31 +1,26 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.user.UserJpaRepository;
 
 import java.util.Comparator;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
+
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
 public class ItemMapper {
     private final UserJpaRepository userJpaRepository;
     private final CommentJpaRepository commentJpaRepository;
-    private final CommentMapper commentMapper;
-    private final BookingMapper bookingMapper;
 
     @Autowired
-    public ItemMapper(UserJpaRepository userJpaRepository, CommentJpaRepository commentJpaRepository,
-                      CommentMapper commentMapper, @Lazy BookingMapper bookingMapper) {
+    public ItemMapper(UserJpaRepository userJpaRepository, CommentJpaRepository commentJpaRepository) {
         this.userJpaRepository = userJpaRepository;
         this.commentJpaRepository = commentJpaRepository;
-        this.commentMapper = commentMapper;
-        this.bookingMapper = bookingMapper;
     }
 
     public ItemDto itemToDto(Item item, Boolean... isOwner) {
@@ -35,10 +30,8 @@ public class ItemMapper {
                 .itemDescription(item.getItemDescription())
                 .isItemAvailable(item.getIsItemAvailable())
                 .owner(item.getOwner())
-                .nextBooking(null)
-                .lastBooking(null)
-                .commentsDtoList(commentJpaRepository.findAllByItemId(item.getItemId())
-                                .stream().map(commentMapper::commentToDto).collect(Collectors.toList()))
+                .commentsDtoForItemList(ItemDto.CommentDtoForItem.createCommentsDtoForItemList(commentJpaRepository
+                        .findAllByCommentItemItemId(item.getItemId(), Sort.by(DESC, "commentDate"))))
                 .build();
 
         if (isOwner.length == 1 && isOwner[0] && item.getBookingsSet() != null && !item.getBookingsSet().isEmpty()) {
@@ -47,15 +40,14 @@ public class ItemMapper {
             bookingsSortedSet.addAll(item.getBookingsSet());
 
             if (bookingsSortedSet.first().getBookingStatus() != BookingStatus.REJECTED) {
-                itemDto.setNextBooking(bookingMapper.bookingToDtoForItem(bookingsSortedSet.first()));
+                itemDto.setNextBooking(new ItemDto.BookingDtoForItem(bookingsSortedSet.first()));
             }
             if (bookingsSortedSet.last().getBookingStatus() != BookingStatus.REJECTED) {
-                itemDto.setLastBooking(bookingMapper.bookingToDtoForItem(bookingsSortedSet.last()));
+                itemDto.setLastBooking(new ItemDto.BookingDtoForItem(bookingsSortedSet.last()));
             }
         }
         return itemDto;
     }
-
 
     public Item dtoToItem(ItemDto itemDto, Long userIdHeader) {
         Long userIdOwner = userIdHeader;

@@ -17,7 +17,7 @@ public class CommentDto extends EntityDto {
     @JsonProperty("text")
     private String commentText;
     @JsonProperty("created")
-    private LocalDateTime commentDto;
+    private LocalDateTime commentDate;
     private String authorName;
     private Long itemId;
     private Long userIdHeader;

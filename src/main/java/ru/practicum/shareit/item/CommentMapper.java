@@ -22,7 +22,7 @@ public class CommentMapper {
                 .commentId(comment.getCommentId())
                 .commentText(comment.getCommentText())
                 .authorName(comment.getAuthor().getUserName())
-                .commentDto(comment.getCommentDate())
+                .commentDate(comment.getCommentDate())
                 .build();
     }
 

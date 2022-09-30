@@ -22,7 +22,9 @@ import java.util.Set;
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Item extends ShareItEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) @Column(name = "item_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_id")
     private Long itemId;
     @Column(name = "item_name", nullable = false)
     private String itemName;
@@ -30,14 +32,18 @@ public class Item extends ShareItEntity {
     private String itemDescription;
     @Column(name = "available", nullable = false)
     private Boolean isItemAvailable;
-    @ManyToOne @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id")
     private User owner;
-    @ManyToOne @JoinColumn(name = "request_id", referencedColumnName = "request_id")
+    @ManyToOne
+    @JoinColumn(name = "request_id", referencedColumnName = "request_id")
     private ItemRequest itemRequest;
-    @OneToMany @JoinColumn(name = "booking_item_id")
+    @OneToMany
+    @JoinColumn(name = "booking_item_id")
     @ToString.Exclude
     private Set<Booking> bookingsSet;
-    @OneToMany @JoinColumn(name = "comment_item_id")
+    @OneToMany
+    @JoinColumn(name = "comment_item_id")
     @ToString.Exclude
     private Set<Comment> commentsSet;
     @Transient

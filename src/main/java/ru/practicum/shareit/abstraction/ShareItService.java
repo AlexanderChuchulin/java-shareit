@@ -25,4 +25,9 @@ public interface ShareItService<T extends ShareItEntity, V extends EntityDto> {
      Метод для валидации сущности
      */
     void validateEntityService(T entity, Boolean isUpdate, String conclusion);
+
+    /**
+     Метод для проверки существования сущности
+     */
+    void entityExistCheck(Long entityId, String action);
 }

@@ -31,7 +31,6 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
         this.userJpaRepository = userJpaRepository;
     }
 
-
     @Override
     public BookingDto createEntityService(BookingDto bookingDto, Long userIdHeader) {
         String conclusion = "Бронирование не создано в БД.";
@@ -44,7 +43,10 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
 
     @Override
     public Object getEntityService(Long bookingId, Long userIdHeader, String... bookingState) {
-        userJpaRepository.entityExistCheck(userIdHeader, "Get Bookings by User ID Header " + userIdHeader + " прерван");
+        if (!userJpaRepository.existsById(userIdHeader)) {
+            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " +
+                    "Get Bookings by User ID Header " + userIdHeader + " прерван");
+        }
 
         List<Booking> bookingList = new ArrayList<>();
         boolean isStateLikeStatus;
@@ -99,19 +101,19 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
                     }
                 }
             }
-            log.info("Get All Bookings by User ID Header");
+            log.info("Get All Bookings by User ID Header " + userIdHeader);
             return bookingList.stream()
                     .map(bookingMapper::bookingToDto)
                     .collect(Collectors.toList());
         }
 
-        bookingJpaRepository.entityExistCheck(bookingId, "Get Booking by ID " + bookingId);
+        entityExistCheck(bookingId, "Get NextBooking by ID " + bookingId);
 
         if (bookingJpaRepository.getReferenceById(bookingId).getBooker().getUserId() != userIdHeader.intValue()
                 && bookingJpaRepository.getReferenceById(bookingId).getBookingItem().getOwner().getUserId() != userIdHeader.intValue()) {
             throw new EntityNotFoundExc("Ошибка авторизации - попытка получить бронирование не владельцем вещи или бронирования. ");
         }
-        log.info("Get Booking by Id " + bookingId);
+        log.info("Get NextBooking by Id " + bookingId);
         return bookingMapper.bookingToDto(bookingJpaRepository.getReferenceById(bookingId));
     }
 
@@ -119,14 +121,31 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
     public BookingDto updateEntityService(Long bookingId, BookingDto bookingDto, Long userIdHeader) {
         Booking updatingBooking = bookingMapper.dtoToBooking(bookingDto, userIdHeader);
 
-        log.info("Update Booking by ID " + bookingId);
+        log.info("Update NextBooking by ID " + bookingId);
         return bookingMapper.bookingToDto(bookingJpaRepository.save(updatingBooking));
     }
 
     public BookingDto updateBookingService(Long bookingId, Long userIdHeader, Boolean isBookingApproved) {
-        log.info("Update Booking by ID " + bookingId);
-        return bookingMapper.bookingToDto(bookingJpaRepository
-                .save(bookingJpaRepository.updateBookingById(bookingId, userIdHeader, isBookingApproved, this)));
+        entityExistCheck(bookingId, "Update NextBooking by id " + bookingId);
+
+        Booking updatingBooking = bookingJpaRepository.getReferenceById(bookingId);
+
+        updatingBooking.setUserIdHeader(userIdHeader);
+
+        if (updatingBooking.getBookingStatus() == BookingStatus.APPROVED & isBookingApproved) {
+            throw new ValidationExc("Ошибка обновления. Смена статуса после одобрения.");
+        }
+
+        if (isBookingApproved) {
+            updatingBooking.setBookingStatus(BookingStatus.APPROVED);
+        } else {
+            updatingBooking.setBookingStatus(BookingStatus.REJECTED);
+        }
+
+        validateEntityService(updatingBooking, true, "Бронирование не обновлено в БД.");
+
+        log.info("Update NextBooking by ID " + bookingId);
+        return bookingMapper.bookingToDto(bookingJpaRepository.save(updatingBooking));
     }
 
     @Override
@@ -135,7 +154,7 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
             bookingJpaRepository.deleteAll();
             log.info("Delete All Items");
         } else {
-            bookingJpaRepository.entityExistCheck(bookingId, "Delete Booking by id " + bookingId);
+            entityExistCheck(bookingId, "Delete NextBooking by id " + bookingId);
             bookingJpaRepository.deleteById(bookingId);
             log.info("Delete Item by id " + bookingId);
         }
@@ -183,6 +202,13 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
             } else {
                 throw new ValidationExc(excMsg);
             }
+        }
+    }
+
+    @Override
+    public void entityExistCheck(Long bookingId, String action) {
+        if (!bookingJpaRepository.existsById(bookingId)) {
+            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " + action + " прервано.");
         }
     }
 }
