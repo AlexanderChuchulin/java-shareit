@@ -1,10 +1,9 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.hibernate.Hibernate;
 import ru.practicum.shareit.abstraction.ShareItEntity;
-import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "comments")
 @Builder
 @Getter
 @Setter
@@ -20,21 +19,20 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Booking extends ShareItEntity {
+public class Comment extends ShareItEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id")
-    private Long bookingId;
-    private LocalDateTime bookingStart;
-    private LocalDateTime bookingEnd;
-    @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus;
+    @Column(name = "comment_id")
+    private Long commentId;
+    @Column(name = "comment_text", nullable = false)
+    private String commentText;
     @ManyToOne
-    @JoinColumn(name = "booking_item_id", referencedColumnName = "item_id")
-    private Item bookingItem;
+    @JoinColumn(name = "comment_item_id", referencedColumnName = "item_id")
+    private Item commentItem;
     @ManyToOne
-    @JoinColumn(name = "booker_id", referencedColumnName = "user_id")
-    private User booker;
+    @JoinColumn(name = "author_id", referencedColumnName = "user_id")
+    private User author;
+    private LocalDateTime commentDate;
     @Transient
     private Long userIdHeader;
 
@@ -42,8 +40,8 @@ public class Booking extends ShareItEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Booking booking = (Booking) o;
-        return bookingId != null && Objects.equals(bookingId, booking.bookingId);
+        Comment comment = (Comment) o;
+        return commentId != null && Objects.equals(commentId, comment.commentId);
     }
 
     @Override
