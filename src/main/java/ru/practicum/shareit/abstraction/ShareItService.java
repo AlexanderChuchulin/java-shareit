@@ -9,7 +9,7 @@ public interface ShareItService<T extends ShareItEntity, V extends EntityDto> {
     /**
      Метод возвращает все объекты или один объект по заданному id
      */
-    Object getEntityService(Long entityId, Long userIdHeader, String...bookingStatus);
+    Object getEntityService(Long entityId, Long userIdHeader, String...additionalParams);
 
     /**
     Метод обновляет объект

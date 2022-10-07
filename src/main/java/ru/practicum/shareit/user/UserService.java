@@ -10,7 +10,6 @@ import ru.practicum.shareit.exception.MainPropDuplicateExc;
 import ru.practicum.shareit.exception.ValidationExc;
 import ru.practicum.shareit.other.OtherUtils;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,7 +35,7 @@ public class UserService implements ShareItService<User, UserDto> {
     }
 
     @Override
-    public Object getEntityService(Long userId, Long userIdHeader, String...bookingStatus) {
+    public Object getEntityService(Long userId, Long userIdHeader, String... additionalParams) {
         if (userId == null) {
             log.info("Get All Users");
             return userJpaRepository.findAll().stream()
@@ -45,7 +44,7 @@ public class UserService implements ShareItService<User, UserDto> {
         }
         entityExistCheck(userId, "Get User by ID " + userId);
         log.info("Get User By Id " + userId);
-        return userMapper.userToDto(userJpaRepository.getReferenceById(userId));
+        return userMapper.userToDto(userJpaRepository.findById(userId).orElseThrow());
     }
 
     @Override
@@ -79,7 +78,7 @@ public class UserService implements ShareItService<User, UserDto> {
     public void validateEntityService(User user, Boolean isUpdate, String conclusion) {
         String excMsg = "";
 
-        if (user.getUserName() == null || user.getUserName().isEmpty()) {
+        if (user.getUserName() == null || user.getUserName().isBlank()) {
             user.setUserName(user.getEmail());
         }
 
@@ -88,7 +87,8 @@ public class UserService implements ShareItService<User, UserDto> {
                 Pattern.CASE_INSENSITIVE).matcher(user.getEmail()).find()) {
             excMsg += "Адрес электронной почты должен быть задан и иметь верный формат. ";
         } else if (userJpaRepository.findByEmailContainingIgnoreCase(user.getEmail()) != null) {
-            if (isUpdate && !Objects.equals(userJpaRepository.findByEmailContainingIgnoreCase(user.getEmail()).getUserId(), user.getUserId())) {
+            if (isUpdate && userJpaRepository
+                    .findByEmailContainingIgnoreCase(user.getEmail()).getUserId() != user.getUserId().longValue()) {
                 excMsg += "Пользователь с e-mail " + user.getEmail() + " уже зарегистрирован. ";
             }
         }

@@ -7,6 +7,7 @@ import ru.practicum.shareit.exception.AuthorizationExc;
 import ru.practicum.shareit.exception.EntityNotFoundExc;
 import ru.practicum.shareit.exception.MainPropDuplicateExc;
 import ru.practicum.shareit.exception.ValidationExc;
+import ru.practicum.shareit.other.OtherUtils;
 import ru.practicum.shareit.user.UserJpaRepository;
 
 import java.time.LocalDateTime;
@@ -42,67 +43,82 @@ public class BookingService implements ShareItService<Booking, BookingDto> {
     }
 
     @Override
-    public Object getEntityService(Long bookingId, Long userIdHeader, String... bookingState) {
+    public Object getEntityService(Long bookingId, Long userIdHeader, String... additionalParams) {
         if (!userJpaRepository.existsById(userIdHeader)) {
-            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " +
+            throw new EntityNotFoundExc("Ошибка поиска Пользователя в БД. " +
                     "Get Bookings by User ID Header " + userIdHeader + " прерван");
         }
 
-        List<Booking> bookingList = new ArrayList<>();
+        String action = "Бронирования";
+        List<Booking> bookingPage = new ArrayList<>();
         boolean isStateLikeStatus;
 
         if (bookingId == null || bookingId == -111222333L) {
             isStateLikeStatus = false;
 
-            if (bookingState[0] != null) {
-                if (!Arrays.toString(BookingState.values()).contains(bookingState[0].toUpperCase())) {
-                    throw new ValidationExc("Unknown state: " + bookingState[0]);
+            if (additionalParams[2] != null) {
+                if (!Arrays.toString(BookingState.values())
+                        .contains(additionalParams[2].toUpperCase())) {
+                    throw new ValidationExc("Unknown state: " + additionalParams[2]);
                 } else {
-                    isStateLikeStatus = Arrays.toString(BookingStatus.values()).contains(bookingState[0].toUpperCase());
+                    isStateLikeStatus = Arrays.toString(BookingStatus.values())
+                            .contains(additionalParams[2].toUpperCase());
                 }
             }
 
             if (bookingId == null) {
                 if (isStateLikeStatus) {
-                    bookingList = bookingJpaRepository.findAllByBookerIdAndStatus(userIdHeader, BookingStatus.valueOf(bookingState[0]));
+                    bookingPage = bookingJpaRepository.findAllByBookerIdAndStatus(userIdHeader,
+                            BookingStatus.valueOf(additionalParams[2]),
+                            OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                 } else {
-                    switch (Objects.requireNonNull(bookingState[0]).toLowerCase()) {
+                    switch (Objects.requireNonNull(additionalParams[2]).toLowerCase()) {
                         case "all":
-                            bookingList = bookingJpaRepository.findAllByBookerIdAndStateAll(userIdHeader);
+                            bookingPage = bookingJpaRepository.findAllByBookerIdAndStateAll(userIdHeader,
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "past":
-                            bookingList = bookingJpaRepository.findAllByBookerIdAndStatePast(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByBookerIdAndStatePast(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "current":
-                            bookingList = bookingJpaRepository.findAllByBookerIdAndStateCurrent(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByBookerIdAndStateCurrent(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "future":
-                            bookingList = bookingJpaRepository.findAllByBookerIdAndStateFuture(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByBookerIdAndStateFuture(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                     }
                 }
             } else {
                 if (isStateLikeStatus) {
-                    bookingList = bookingJpaRepository.findAllByItemsOwnerIdAndStatus(userIdHeader, BookingStatus.valueOf(bookingState[0]));
+                    bookingPage = bookingJpaRepository.findAllByItemsOwnerIdAndStatus(userIdHeader,
+                            BookingStatus.valueOf(additionalParams[2]),
+                            OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                 } else {
-                    switch (Objects.requireNonNull(bookingState[0]).toLowerCase()) {
+                    switch (Objects.requireNonNull(additionalParams[2]).toLowerCase()) {
                         case "all":
-                            bookingList = bookingJpaRepository.findAllByItemsOwnerIdAndStateAll(userIdHeader);
+                            bookingPage = bookingJpaRepository.findAllByItemsOwnerIdAndStateAll(userIdHeader,
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "past":
-                            bookingList = bookingJpaRepository.findAllByItemsOwnerIdAndStatePast(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByItemsOwnerIdAndStatePast(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "current":
-                            bookingList = bookingJpaRepository.findAllByItemsOwnerIdAndStateCurrent(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByItemsOwnerIdAndStateCurrent(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                         case "future":
-                            bookingList = bookingJpaRepository.findAllByItemsOwnerIdAndStateFuture(userIdHeader, LocalDateTime.now());
+                            bookingPage = bookingJpaRepository.findAllByItemsOwnerIdAndStateFuture(userIdHeader, LocalDateTime.now(),
+                                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, action));
                             break;
                     }
                 }
             }
             log.info("Get All Bookings by User ID Header " + userIdHeader);
-            return bookingList.stream()
+            return bookingPage.stream()
                     .map(bookingMapper::bookingToDto)
                     .collect(Collectors.toList());
         }

@@ -24,8 +24,10 @@ public abstract class CommonController<T extends ShareItEntity, V extends Entity
 
     @GetMapping(value = {"", "/{entityId}"})
     private Object getEntityController(@PathVariable(required = false) Long entityId,
-                                       @RequestParam(value = "state", required = false, defaultValue = "ALL") String bookingStatus,
+                                       @RequestParam(value = "from", required = false, defaultValue = "0") String from,
+                                       @RequestParam(value = "size", required = false) String size,
+                                       @RequestParam(value = "state", required = false, defaultValue = "ALL") String bookingState,
                                        @RequestHeader(value = "X-Sharer-User-Id", required = false) Long userIdHeader) {
-        return shareItService.getEntityService(entityId, userIdHeader, bookingStatus);
+        return shareItService.getEntityService(entityId, userIdHeader, from, size, bookingState);
     }
 }

@@ -49,7 +49,7 @@ public class ItemService implements ShareItService<Item, ItemDto> {
         return itemMapper.itemToDto(itemJpaRepository.save(itemMapper.dtoToItem(itemDto, userIdHeader)));
     }
 
-    CommentDto createCommentService(CommentDto commentDto, Long itemId, Long userIdHeader) {
+    public CommentDto createCommentService(CommentDto commentDto, Long itemId, Long userIdHeader) {
         if (bookingJpaRepository.findAllByBookerIdAndItemIdAndTime(itemId, userIdHeader, LocalDateTime.now()).isEmpty()
                 || commentDto.getCommentText().isBlank()) {
             throw new ValidationExc("Комментарий не соответствует условиям Бронирования или текст пустой");
@@ -59,15 +59,16 @@ public class ItemService implements ShareItService<Item, ItemDto> {
     }
 
     @Override
-    public Object getEntityService(Long itemId, Long userIdHeader, String...bookingStatus) {
+    public Object getEntityService(Long itemId, Long userIdHeader, String... additionalParams) {
         if (!userJpaRepository.existsById(userIdHeader)) {
-            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " +
+            throw new EntityNotFoundExc("Ошибка поиска Пользователя в БД. " +
                     "Get Item by User ID Header " + itemId + " прерван");
         }
 
         if (itemId == null) {
             log.info("Get All Items by User ID Header");
-            return itemJpaRepository.findAllByOwnerUserId(userIdHeader).stream()
+            return itemJpaRepository.findAllByOwnerUserId(userIdHeader,
+                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, "Вещи")).stream()
                     .map(item -> itemMapper.itemToDto(item, true))
                     .collect(Collectors.toList());
         }
@@ -83,11 +84,12 @@ public class ItemService implements ShareItService<Item, ItemDto> {
         return itemMapper.itemToDto(itemJpaRepository.getReferenceById(itemId), false);
     }
 
-    List<ItemDto> getItemBySearchText(String searchText) {
+    public List<ItemDto> getItemBySearchText(String searchText, String... additionalParams) {
         if (searchText.isBlank()) {
             return List.of();
         }
-        return itemJpaRepository.findAllAvailableItemsBySearchText(searchText).stream()
+        return itemJpaRepository.findAllAvailableItemsBySearchText(searchText,
+                OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, "Вещи")).stream()
                 .map(itemMapper::itemToDto)
                 .collect(Collectors.toList());
     }

@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import ru.practicum.shareit.abstraction.ShareItEntity;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -37,7 +37,7 @@ public class Item extends ShareItEntity {
     private User owner;
     @ManyToOne
     @JoinColumn(name = "request_id", referencedColumnName = "request_id")
-    private ItemRequest itemRequest;
+    private Request request;
     @OneToMany
     @JoinColumn(name = "booking_item_id")
     @ToString.Exclude
