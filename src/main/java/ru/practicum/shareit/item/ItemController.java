@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
-public class ItemController extends CommonController<Item, ItemDto> {
+public class ItemController extends CommonController<ItemDto> {
     private final ItemService itemService;
 
     @Autowired

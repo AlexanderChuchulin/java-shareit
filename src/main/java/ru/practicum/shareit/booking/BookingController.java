@@ -6,7 +6,7 @@ import ru.practicum.shareit.abstraction.CommonController;
 
 @RestController
 @RequestMapping("/bookings")
-public class BookingController extends CommonController<Booking, BookingDto> {
+public class BookingController extends CommonController<BookingDto> {
     private final BookingService bookingService;
 
     @Autowired

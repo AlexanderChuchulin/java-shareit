@@ -11,9 +11,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemDto extends EntityDto {
     @JsonProperty("id")
@@ -54,6 +58,8 @@ public class ItemDto extends EntityDto {
     @JsonInclude
     @Builder
     @Getter
+    @ToString
+    @EqualsAndHashCode
     public static class CommentDtoForItem {
         private Long id;
         private String text;

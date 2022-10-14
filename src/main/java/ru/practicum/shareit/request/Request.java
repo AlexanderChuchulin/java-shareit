@@ -2,13 +2,11 @@ package ru.practicum.shareit.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.hibernate.Hibernate;
 import ru.practicum.shareit.abstraction.ShareItEntity;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "requests")
@@ -32,17 +30,4 @@ public class Request extends ShareItEntity {
     private LocalDateTime requestDate;
     @Transient
     private Long userIdHeader;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Request that = (Request) o;
-        return requestId != null && Objects.equals(requestId, that.requestId);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

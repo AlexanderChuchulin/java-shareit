@@ -33,10 +33,10 @@ public class OtherUtils {
     /**
      * Метод возвращает PageRequest, собранный на основе двух первых дополнительных данных переданных в контролёр
      */
-    public static Pageable pageableCreateFrommAdditionalParams(String[] additionalParams, String entityName, String... sortParam) {
+    public static Pageable pageableCreateFrommAdditionalParams(String[] additionalParams, long pageSize, String... sortParam) {
 
         if (Integer.parseInt(additionalParams[0]) < 0 || additionalParams[1] != null && Integer.parseInt(additionalParams[1]) <= 0) {
-            throw new ValidationExc("Неправильные параметры разбивки на страницы. " + entityName + " не возвращены.");
+            throw new ValidationExc("Неправильные параметры разбивки на страницы. Данные не возвращены.");
         }
 
         long startElement = Integer.parseInt(additionalParams[0]);
@@ -44,7 +44,7 @@ public class OtherUtils {
         long page;
 
         if (additionalParams[1] == null) {
-            size = Integer.MAX_VALUE;
+            size = pageSize;
             page = 0;
         } else {
             size = Long.parseLong(additionalParams[1]);

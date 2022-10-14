@@ -7,9 +7,13 @@ import ru.practicum.shareit.abstraction.EntityDto;
 
 import java.time.LocalDateTime;
 
-@Data
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDto extends EntityDto {
     @JsonProperty("id")

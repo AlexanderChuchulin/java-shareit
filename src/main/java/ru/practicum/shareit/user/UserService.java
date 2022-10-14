@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class UserService implements ShareItService<User, UserDto> {
+public class UserService implements ShareItService<UserDto> {
     private final UserJpaRepository userJpaRepository;
     private final UserMapper userMapper;
 
@@ -29,7 +29,7 @@ public class UserService implements ShareItService<User, UserDto> {
     public UserDto createEntityService(UserDto userDto, Long userIdHeader) {
         String conclusion = "Пользователь не создан в БД.";
 
-        validateEntityService(userMapper.dtoToUser(userDto), false, conclusion);
+        validateUserService(userMapper.dtoToUser(userDto), false, conclusion);
         log.info("Create User DB " + userMapper.dtoToUser(userDto));
         return userMapper.userToDto(userJpaRepository.save(userMapper.dtoToUser(userDto)));
     }
@@ -42,21 +42,21 @@ public class UserService implements ShareItService<User, UserDto> {
                     .map(userMapper::userToDto)
                     .collect(Collectors.toList());
         }
-        entityExistCheck(userId, "Get User by ID " + userId);
+        userExistCheck(userId, "Get User by ID " + userId);
         log.info("Get User By Id " + userId);
-        return userMapper.userToDto(userJpaRepository.findById(userId).orElseThrow());
+        return userMapper.userToDto(userJpaRepository.getReferenceById(userId));
     }
 
     @Override
     public UserDto updateEntityService(Long userId, UserDto userDto, Long userIdHeader) {
         User updatingUser = userMapper.dtoToUser(userDto);
 
-        entityExistCheck(userId, "Update User by id " + userId);
+        userExistCheck(userId, "Update User by id " + userId);
 
         BeanUtils.copyProperties(userJpaRepository
                 .getReferenceById(userId), updatingUser, OtherUtils.getNotNullPropertyNames(updatingUser));
 
-        validateEntityService(updatingUser, true, "Пользователь не обновлён в БД.");
+        validateUserService(updatingUser, true, "Пользователь не обновлён в БД.");
 
         log.info("Update User by ID " + userId);
         return userMapper.userToDto(userJpaRepository.save(updatingUser));
@@ -68,14 +68,13 @@ public class UserService implements ShareItService<User, UserDto> {
             userJpaRepository.deleteAll();
             log.info("Delete All Users");
         } else {
-            entityExistCheck(userId, "Delete User by ID " + userId);
+            userExistCheck(userId, "Delete User by ID " + userId);
             userJpaRepository.deleteById(userId);
             log.info("Delete User by ID " + userId);
         }
     }
 
-    @Override
-    public void validateEntityService(User user, Boolean isUpdate, String conclusion) {
+    public void validateUserService(User user, Boolean isUpdate, String conclusion) {
         String excMsg = "";
 
         if (user.getUserName() == null || user.getUserName().isBlank()) {
@@ -103,8 +102,7 @@ public class UserService implements ShareItService<User, UserDto> {
         }
     }
 
-    @Override
-    public void entityExistCheck(Long userId, String action) {
+    public void userExistCheck(Long userId, String action) {
         if (!userJpaRepository.existsById(userId)) {
             throw new EntityNotFoundExc("Ошибка поиска Пользователя в БД. " + action + " прервано.");
         }

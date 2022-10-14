@@ -10,8 +10,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestDto extends EntityDto {
@@ -25,9 +28,10 @@ public class RequestDto extends EntityDto {
     private List<RequestDto.ItemDtoForRequest> itemsDtoForRequestList;
     private Long userIdHeader;
 
-    @JsonInclude
     @Builder
     @Getter
+    @EqualsAndHashCode(callSuper = false)
+    @JsonInclude
     public static class ItemDtoForRequest {
         private Long id;
         private String name;

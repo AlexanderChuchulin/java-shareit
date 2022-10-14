@@ -17,6 +17,7 @@ public class UserMapper {
         return User.builder()
                 .email(userDto.getEmail())
                 .userName(userDto.getUserName())
+                .userIdHeader(1L)
                 .build();
     }
 }

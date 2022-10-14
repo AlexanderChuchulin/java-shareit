@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import ru.practicum.shareit.abstraction.EntityDto;
 
-@Data
 @Builder
-@EqualsAndHashCode(callSuper = false)
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class UserDto extends EntityDto {
     @JsonProperty("id")
     private Long userId;

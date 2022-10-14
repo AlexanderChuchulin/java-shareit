@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class RequestService implements ShareItService<Request, RequestDto> {
+public class RequestService implements ShareItService<RequestDto> {
     private final RequestJpaRepository requestJpaRepository;
     private final RequestMapper requestMapper;
     private final UserJpaRepository userJpaRepository;
@@ -31,7 +31,7 @@ public class RequestService implements ShareItService<Request, RequestDto> {
     public RequestDto createEntityService(RequestDto requestDto, Long userIdHeader) {
         String conclusion = "Запрос не создан в БД.";
 
-        validateEntityService(requestMapper.dtoToRequest(requestDto, userIdHeader), false, conclusion);
+        validateRequestService(requestMapper.dtoToRequest(requestDto, userIdHeader), conclusion);
         log.info("Create Request DB " + requestMapper.dtoToRequest(requestDto, userIdHeader));
         return requestMapper.requestToDto(requestJpaRepository.save(requestMapper.dtoToRequest(requestDto, userIdHeader)));
     }
@@ -52,13 +52,13 @@ public class RequestService implements ShareItService<Request, RequestDto> {
 
         if (requestId == -444555666L) {
             log.info("Get All Requests by Any User");
-            return requestJpaRepository.findAllByRequestorUserIdNot(userIdHeader, OtherUtils.pageableCreateFrommAdditionalParams(
-                    additionalParams, "Запросы", "requestDate")).stream()
+            return requestJpaRepository.findAllByRequestorUserIdNotOrderByRequestDateDesc(userIdHeader, OtherUtils
+                            .pageableCreateFrommAdditionalParams(additionalParams, 10, "requestDate")).stream()
                     .map(requestMapper::requestToDto)
                     .collect(Collectors.toList());
         }
 
-        entityExistCheck(requestId, "Get Request by ID " + requestId);
+        requestExistCheck(requestId, "Get Request by ID " + requestId);
 
         log.info("Get Request by Id " + requestId);
         return requestMapper.requestToDto(requestJpaRepository.getReferenceById(requestId));
@@ -75,14 +75,13 @@ public class RequestService implements ShareItService<Request, RequestDto> {
             requestJpaRepository.deleteAll();
             log.info("Delete All Requests");
         } else {
-            entityExistCheck(requestId, "Delete Request by id " + requestId);
+            requestExistCheck(requestId, "Delete Request by id " + requestId);
             requestJpaRepository.deleteById(requestId);
             log.info("Delete Request by id " + requestId);
         }
     }
 
-    @Override
-    public void validateEntityService(Request request, Boolean isUpdate, String conclusion) {
+    public void validateRequestService(Request request, String conclusion) {
         String excMsg = "";
 
         if (request.getUserIdHeader() == null) {
@@ -91,7 +90,8 @@ public class RequestService implements ShareItService<Request, RequestDto> {
             excMsg += "Пользователь с id " + request.getUserIdHeader() + " не найден. ";
         }
 
-        if (request.getRequestDescription() == null || request.getRequestDescription().length() > 5000) {
+        if (request.getRequestDescription() == null || request.getRequestDescription().isBlank()
+                || request.getRequestDescription().length() > 5000) {
             excMsg += "Описание Запроса должно быть задано и быть не более 5000 символов. ";
         }
 
@@ -108,8 +108,7 @@ public class RequestService implements ShareItService<Request, RequestDto> {
         }
     }
 
-    @Override
-    public void entityExistCheck(Long requestId, String action) {
+    public void requestExistCheck(Long requestId, String action) {
         if (!requestJpaRepository.existsById(requestId)) {
             throw new EntityNotFoundExc("Ошибка поиска Запроса в БД. " + action + " прервано.");
         }

@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.ItemJpaRepository;
 import ru.practicum.shareit.user.UserJpaRepository;
 
+import java.time.temporal.ChronoUnit;
+
 @Service
 public class BookingMapper {
     private final UserJpaRepository userJpaRepository;
@@ -19,8 +21,8 @@ public class BookingMapper {
     public BookingDto bookingToDto(Booking booking) {
         return BookingDto.builder()
                 .bookingId(booking.getBookingId())
-                .bookingStart(booking.getBookingStart())
-                .bookingEnd(booking.getBookingEnd())
+                .bookingStart(booking.getBookingStart().truncatedTo(ChronoUnit.MILLIS))
+                .bookingEnd(booking.getBookingEnd().truncatedTo(ChronoUnit.MILLIS))
                 .bookingStatus(booking.getBookingStatus())
                 .bookingItem(new BookingDto.ItemDtoForBooking(booking.getBookingItem()))
                 .booker(new BookingDto.UserDtoForBooking(booking.getBooker().getUserId()))
@@ -30,8 +32,8 @@ public class BookingMapper {
     public Booking dtoToBooking(BookingDto bookingDto, Long userIdHeader) {
         return Booking.builder()
                 .bookingId(bookingDto.getBookingId())
-                .bookingStart(bookingDto.getBookingStart())
-                .bookingEnd(bookingDto.getBookingEnd())
+                .bookingStart(bookingDto.getBookingStart().truncatedTo(ChronoUnit.MILLIS))
+                .bookingEnd(bookingDto.getBookingEnd().truncatedTo(ChronoUnit.MILLIS))
                 .bookingStatus(bookingDto.getBookingStatus())
                 .bookingItem(itemJpaRepository.findById(bookingDto.getItemId()).orElse(null))
                 .booker(userJpaRepository.findById(userIdHeader).orElse(null))

@@ -2,8 +2,8 @@ package ru.practicum.shareit.abstraction;
 
 import org.springframework.web.bind.annotation.*;
 
-public abstract class CommonController<T extends ShareItEntity, V extends EntityDto> {
-    protected ShareItService<T, V> shareItService;
+public abstract class CommonController<V extends EntityDto> {
+    protected ShareItService<V> shareItService;
 
     @PostMapping
     private V createEntityController(@RequestBody V entityDto,

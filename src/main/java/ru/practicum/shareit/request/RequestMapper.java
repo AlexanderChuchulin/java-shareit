@@ -6,6 +6,7 @@ import ru.practicum.shareit.item.ItemJpaRepository;
 import ru.practicum.shareit.user.UserJpaRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class RequestMapper {
@@ -33,7 +34,7 @@ public class RequestMapper {
                 .requestId(requestDto.getRequestId())
                 .requestDescription(requestDto.getRequestDescription())
                 .requestor(userJpaRepository.findById(userIdHeader).orElse(null))
-                .requestDate(LocalDateTime.now())
+                .requestDate(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .userIdHeader(userIdHeader)
                 .build();
     }

@@ -3,17 +3,18 @@ package ru.practicum.shareit.booking;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 import ru.practicum.shareit.abstraction.EntityDto;
 import ru.practicum.shareit.item.Item;
 
 import java.time.LocalDateTime;
 
-@Data
+@ToString
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingDto extends EntityDto {
@@ -32,8 +33,10 @@ public class BookingDto extends EntityDto {
     private Long userIdHeader;
     private Long itemId;
 
+    @ToString
     @JsonInclude
     @Getter
+    @EqualsAndHashCode
     public static class ItemDtoForBooking {
         Long id;
         String name;
@@ -44,8 +47,10 @@ public class BookingDto extends EntityDto {
         }
     }
 
+    @ToString
     @JsonInclude
     @Getter
+    @EqualsAndHashCode
     public static class UserDtoForBooking {
         Long id;
 

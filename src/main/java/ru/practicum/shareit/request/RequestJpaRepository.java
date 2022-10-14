@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface RequestJpaRepository extends JpaRepository<Request, Long> {
 
-    List<Request> findAllByRequestorUserIdOrderByRequestDateDesc(Long itemId);
+    List<Request> findAllByRequestorUserIdOrderByRequestDateDesc(Long userId);
 
-    Page<Request> findAllByRequestorUserIdNot(Long userIdHeader, Pageable pageable);
+    Page<Request> findAllByRequestorUserIdNotOrderByRequestDateDesc(Long userIdHeader, Pageable pageable);
 }

@@ -6,7 +6,7 @@ import ru.practicum.shareit.abstraction.CommonController;
 
 @RestController
 @RequestMapping("/requests")
-public class RequestController extends CommonController<Request, RequestDto> {
+public class RequestController extends CommonController<RequestDto> {
 
     @Autowired
     public RequestController(RequestService requestService) {
