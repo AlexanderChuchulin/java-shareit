@@ -6,7 +6,7 @@ import ru.practicum.shareit.abstraction.CommonController;
 
 @RestController
 @RequestMapping("/bookings")
-public class BookingController extends CommonController<Booking, BookingDto> {
+public class BookingController extends CommonController<BookingDto> {
     private final BookingService bookingService;
 
     @Autowired
@@ -17,14 +17,16 @@ public class BookingController extends CommonController<Booking, BookingDto> {
 
     @GetMapping("/owner")
     private Object getBookingsByOwnerController(
-            @RequestParam(value = "state", required = false, defaultValue = "ALL") String bookingStatus,
+            @RequestParam(value = "from", required = false, defaultValue = "0") String from,
+            @RequestParam(value = "size", required = false) String size,
+            @RequestParam(value = "state", required = false, defaultValue = "ALL") String bookingState,
             @RequestHeader(value = "X-Sharer-User-Id") Long userIdHeader) {
-        return bookingService.getEntityService(-111222333L, userIdHeader, bookingStatus);
+        return bookingService.getEntityService(-111222333L, userIdHeader, from, size, bookingState);
     }
 
     @PatchMapping(path = "/{bookingId}", params = {"approved"})
-    private BookingDto updateEntityController(@PathVariable Long bookingId, @RequestParam("approved") Boolean isBookingApproved,
-                                             @RequestHeader(value = "X-Sharer-User-Id", required = false) Long userIdHeader) {
+    private BookingDto updateBookingController(@PathVariable Long bookingId, @RequestParam("approved") Boolean isBookingApproved,
+                                               @RequestHeader(value = "X-Sharer-User-Id", required = false) Long userIdHeader) {
         return bookingService.updateBookingService(bookingId, userIdHeader, isBookingApproved);
     }
 }

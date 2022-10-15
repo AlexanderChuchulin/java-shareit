@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.UserJpaRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class CommentMapper {
@@ -32,7 +33,7 @@ public class CommentMapper {
                 .commentText(commentDto.getCommentText())
                 .commentItem(itemJpaRepository.findById(itemId).orElse(null))
                 .author(userJpaRepository.findById(userIdHeader).orElse(null))
-                .commentDate(LocalDateTime.now())
+                .commentDate(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS))
                 .build();
     }
 }

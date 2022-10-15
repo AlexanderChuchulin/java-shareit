@@ -2,14 +2,12 @@ package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import org.hibernate.Hibernate;
 import ru.practicum.shareit.abstraction.ShareItEntity;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
@@ -37,17 +35,4 @@ public class Booking extends ShareItEntity {
     private User booker;
     @Transient
     private Long userIdHeader;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Booking booking = (Booking) o;
-        return bookingId != null && Objects.equals(bookingId, booking.bookingId);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

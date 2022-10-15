@@ -6,7 +6,7 @@ import ru.practicum.shareit.abstraction.CommonController;
 
 @RestController
 @RequestMapping("/users")
-public class UserController extends CommonController<User, UserDto> {
+public class UserController extends CommonController<UserDto> {
 
     @Autowired
     public UserController(UserService userService) {

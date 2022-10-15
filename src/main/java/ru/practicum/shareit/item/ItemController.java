@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
-public class ItemController extends CommonController<Item, ItemDto> {
+public class ItemController extends CommonController<ItemDto> {
     private final ItemService itemService;
 
     @Autowired
@@ -24,8 +24,10 @@ public class ItemController extends CommonController<Item, ItemDto> {
     }
 
     @GetMapping("/search")
-    private List<ItemDto> getEntityController(@RequestParam(name = "text") String searchText) {
-        return itemService.getItemBySearchText(searchText);
+    private List<ItemDto> getItemBySearchTextController(@RequestParam(value = "from", required = false, defaultValue = "0") String from,
+                                                        @RequestParam(value = "size", required = false) String size,
+                                                        @RequestParam(name = "text") String searchText) {
+        return itemService.getItemBySearchText(searchText, from, size, searchText);
     }
 
 

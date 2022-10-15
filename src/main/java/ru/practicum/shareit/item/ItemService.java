@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ItemService implements ShareItService<Item, ItemDto> {
+public class ItemService implements ShareItService<ItemDto> {
     private final ItemJpaRepository itemJpaRepository;
     private final ItemMapper itemMapper;
     private final CommentJpaRepository commentJpaRepository;
@@ -44,35 +44,35 @@ public class ItemService implements ShareItService<Item, ItemDto> {
     public ItemDto createEntityService(ItemDto itemDto, Long userIdHeader) {
         String conclusion = "Вещь не создана в БД.";
 
-        validateEntityService(itemMapper.dtoToItem(itemDto, userIdHeader), false, conclusion);
+        validateItemService(itemMapper.dtoToItem(itemDto, userIdHeader), false, conclusion);
         log.info("Create User DB " + itemMapper.dtoToItem(itemDto, userIdHeader));
         return itemMapper.itemToDto(itemJpaRepository.save(itemMapper.dtoToItem(itemDto, userIdHeader)));
     }
 
-    CommentDto createCommentService(CommentDto commentDto, Long itemId, Long userIdHeader) {
+    public CommentDto createCommentService(CommentDto commentDto, Long itemId, Long userIdHeader) {
         if (bookingJpaRepository.findAllByBookerIdAndItemIdAndTime(itemId, userIdHeader, LocalDateTime.now()).isEmpty()
                 || commentDto.getCommentText().isBlank()) {
             throw new ValidationExc("Комментарий не соответствует условиям Бронирования или текст пустой");
         }
         return commentMapper.commentToDto(commentJpaRepository.save(commentMapper.dtoToComment(commentDto, itemId, userIdHeader)));
-
     }
 
     @Override
-    public Object getEntityService(Long itemId, Long userIdHeader, String...bookingStatus) {
+    public Object getEntityService(Long itemId, Long userIdHeader, String... additionalParams) {
         if (!userJpaRepository.existsById(userIdHeader)) {
-            throw new EntityNotFoundExc("Ошибка поиска Бронирования в БД. " +
+            throw new EntityNotFoundExc("Ошибка поиска Пользователя в БД. " +
                     "Get Item by User ID Header " + itemId + " прерван");
         }
 
         if (itemId == null) {
             log.info("Get All Items by User ID Header");
-            return itemJpaRepository.findAllByOwnerUserId(userIdHeader).stream()
+            return itemJpaRepository.findAllByOwnerUserId(userIdHeader,
+                    OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, 10)).stream()
                     .map(item -> itemMapper.itemToDto(item, true))
                     .collect(Collectors.toList());
         }
 
-        entityExistCheck(itemId, "Get Item by ID " + itemId);
+        itemExistCheck(itemId, "Get Item by ID " + itemId);
 
         if (itemJpaRepository.getReferenceById(itemId).getOwner().getUserId() == userIdHeader.longValue()) {
             log.info("Get Item by Id " + itemId + " For Owner with Id " + userIdHeader);
@@ -83,11 +83,12 @@ public class ItemService implements ShareItService<Item, ItemDto> {
         return itemMapper.itemToDto(itemJpaRepository.getReferenceById(itemId), false);
     }
 
-    List<ItemDto> getItemBySearchText(String searchText) {
+    public List<ItemDto> getItemBySearchText(String searchText, String... additionalParams) {
         if (searchText.isBlank()) {
             return List.of();
         }
-        return itemJpaRepository.findAllAvailableItemsBySearchText(searchText).stream()
+        return itemJpaRepository.findAllAvailableItemsBySearchText(searchText,
+                OtherUtils.pageableCreateFrommAdditionalParams(additionalParams, 10)).stream()
                 .map(itemMapper::itemToDto)
                 .collect(Collectors.toList());
     }
@@ -96,12 +97,12 @@ public class ItemService implements ShareItService<Item, ItemDto> {
     public ItemDto updateEntityService(Long itemId, ItemDto itemDto, Long userIdHeader) {
         Item updatingItem = itemMapper.dtoToItem(itemDto, userIdHeader);
 
-        entityExistCheck(itemId, "Update Item by id " + itemId);
+        itemExistCheck(itemId, "Update Item by id " + itemId);
 
         BeanUtils.copyProperties(itemJpaRepository
                 .getReferenceById(itemId), updatingItem, OtherUtils.getNotNullPropertyNames(updatingItem));
 
-        validateEntityService(updatingItem, true, "Вещь не обновлена в БД.");
+        validateItemService(updatingItem, true, "Вещь не обновлена в БД.");
 
         updatingItem.setUserIdHeader(updatingItem.getOwner().getUserId());
 
@@ -115,14 +116,13 @@ public class ItemService implements ShareItService<Item, ItemDto> {
             itemJpaRepository.deleteAll();
             log.info("Delete All Items");
         } else {
-            entityExistCheck(itemId, "Delete User by id " + itemId);
+            itemExistCheck(itemId, "Delete User by id " + itemId);
             itemJpaRepository.deleteById(itemId);
             log.info("Delete Item by id " + itemId);
         }
     }
 
-    @Override
-    public void validateEntityService(Item item, Boolean isUpdate, String conclusion) {
+    public void validateItemService(Item item, Boolean isUpdate, String conclusion) {
         String excMsg = "";
 
         if (item.getUserIdHeader() == null) {
@@ -138,7 +138,7 @@ public class ItemService implements ShareItService<Item, ItemDto> {
             excMsg += "Название вещи должно быть задано и быть не более 255 символов. ";
         }
 
-        if (item.getItemDescription() == null || item.getItemDescription().length() > 5000) {
+        if (item.getItemDescription() == null || item.getItemDescription().isBlank() || item.getItemDescription().length() > 5000) {
             excMsg += "Описание вещи должно быть задано и быть не более 5000 символов. ";
         }
 
@@ -161,8 +161,7 @@ public class ItemService implements ShareItService<Item, ItemDto> {
         }
     }
 
-    @Override
-    public void entityExistCheck(Long itemId, String action) {
+    public void itemExistCheck(Long itemId, String action) {
         if (!itemJpaRepository.existsById(itemId)) {
             throw new EntityNotFoundExc("Ошибка поиска Вещи в БД. " + action + " прервано.");
         }

@@ -6,16 +6,18 @@ import lombok.*;
 import ru.practicum.shareit.abstraction.EntityDto;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingStatus;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ItemDto extends EntityDto {
     @JsonProperty("id")
@@ -26,14 +28,13 @@ public class ItemDto extends EntityDto {
     private String itemDescription;
     @JsonProperty("available")
     private Boolean isItemAvailable;
-    private User owner;
-    private ItemRequest itemRequest;
     @JsonInclude
     private BookingDtoForItem nextBooking;
     @JsonInclude
     private BookingDtoForItem lastBooking;
     @JsonProperty("comments")
     private List<CommentDtoForItem> commentsDtoForItemList;
+    private Long requestId;
     private Long userIdHeader;
 
     @JsonInclude
@@ -57,13 +58,15 @@ public class ItemDto extends EntityDto {
     @JsonInclude
     @Builder
     @Getter
+    @ToString
+    @EqualsAndHashCode
     public static class CommentDtoForItem {
         private Long id;
         private String text;
         private LocalDateTime created;
         private String authorName;
 
-        static List<CommentDtoForItem> createCommentsDtoForItemList(List<Comment> commentsList) {
+        public static List<CommentDtoForItem> createCommentsDtoForItemList(List<Comment> commentsList) {
             List<CommentDtoForItem> commentsDtoForItemList = new ArrayList<>();
 
             for (Comment comment : commentsList) {

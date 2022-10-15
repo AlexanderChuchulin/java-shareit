@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.request.RequestJpaRepository;
 import ru.practicum.shareit.user.UserJpaRepository;
 
 import java.util.Comparator;
@@ -16,11 +17,14 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 public class ItemMapper {
     private final UserJpaRepository userJpaRepository;
     private final CommentJpaRepository commentJpaRepository;
+    private final RequestJpaRepository requestJpaRepository;
 
     @Autowired
-    public ItemMapper(UserJpaRepository userJpaRepository, CommentJpaRepository commentJpaRepository) {
+    public ItemMapper(UserJpaRepository userJpaRepository, CommentJpaRepository commentJpaRepository,
+                      RequestJpaRepository requestJpaRepository) {
         this.userJpaRepository = userJpaRepository;
         this.commentJpaRepository = commentJpaRepository;
+        this.requestJpaRepository = requestJpaRepository;
     }
 
     public ItemDto itemToDto(Item item, Boolean... isOwner) {
@@ -29,9 +33,9 @@ public class ItemMapper {
                 .itemName(item.getItemName())
                 .itemDescription(item.getItemDescription())
                 .isItemAvailable(item.getIsItemAvailable())
-                .owner(item.getOwner())
                 .commentsDtoForItemList(ItemDto.CommentDtoForItem.createCommentsDtoForItemList(commentJpaRepository
                         .findAllByCommentItemItemId(item.getItemId(), Sort.by(DESC, "commentDate"))))
+                .requestId(item.getRequest() != null ? item.getRequest().getRequestId() : null)
                 .build();
 
         if (isOwner.length == 1 && isOwner[0] && item.getBookingsSet() != null && !item.getBookingsSet().isEmpty()) {
@@ -60,6 +64,8 @@ public class ItemMapper {
                 .isItemAvailable(itemDto.getIsItemAvailable())
                 .userIdHeader(userIdHeader)
                 .owner(userJpaRepository.findById(userIdOwner).orElse(null))
+                .request(itemDto.getRequestId() != null
+                        ? requestJpaRepository.findById(itemDto.getRequestId()).orElse(null) : null)
                 .build();
     }
 }
